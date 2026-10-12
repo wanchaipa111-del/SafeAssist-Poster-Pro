@@ -1,0 +1,32 @@
+{
+  "id": "/",
+  "name": "FB Real Estate SafeAssist Pro",
+  "short_name": "SafeAssist",
+  "description": "ระบบช่วยโพสต์อสังหาฯ หลายกลุ่ม Facebook กึ่งอัตโนมัติ ปลอดภัย จัดการทรัพย์และประวัติการโพสต์",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

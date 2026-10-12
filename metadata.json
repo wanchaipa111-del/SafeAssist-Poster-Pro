@@ -1,0 +1,8 @@
+{
+  "name": "FB Real Estate SafeAssist Pro",
+  "description": "ระบบช่วยโพสต์อสังหาฯ หลายกลุ่ม Facebook กึ่งอัตโนมัติ ปลอดภัย จัดการทรัพย์ กลุ่มเป้าหมาย และประวัติการโพสต์ พร้อมระบบนำเข้าส่งออก Excel",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
