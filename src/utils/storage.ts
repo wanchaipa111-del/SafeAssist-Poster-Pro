@@ -18,23 +18,6 @@ export const SAMPLE_PROPERTIES: Property[] = [
     imgFolderPath: 'C:\\RealEstate\\Properties\\Condo_MJatujak',
     imgUrl: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&auto=format&fit=crop&q=80',
     description: 'คอนโดหรูพร้อมอยู่ วิวเมืองเปิดกว้าง เฟอร์นิเจอร์และเครื่องใช้ไฟฟ้าครบชุด ส่วนกลางระดับพรีเมียม สระว่ายน้ำ ฟิตเนส 2 ชั้น'
-  },
-  {
-    id: 'prop-2',
-    code: 'H-6602',
-    title: 'บ้านเดี่ยว 2 ชั้น เศรษฐสิริ กรุงเทพกรีฑา 4 ห้องนอน แปลงมุม',
-    type: 'บ้านเดี่ยว',
-    dealType: 'ขาย',
-    price: '12,900,000 บาท',
-    location: 'กรุงเทพกรีฑา / ใกล้ด่วนศรีรัช',
-    size: '65 ตร.วา (ใช้สอย 220 ตร.ม.)',
-    details: '4 ห้องนอน 4 ห้องน้ำ จอดรถ 2 คัน',
-    contact: 'โทร 089-999-8888 (คุณบี)',
-    ownerContact: 'คุณสมชาย (เจ้าของบ้าน) โทร 081-999-7777 / Line: somchai_owner',
-    sourceUrl: 'https://www.facebook.com/groups/bkkrealestate/posts/2023991822',
-    imgFolderPath: 'D:\\Houses\\Setthasiri_KrungthepKreetha',
-    imgUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&auto=format&fit=crop&q=80',
-    description: 'บ้านเดี่ยวสภาพใหม่มาก ตกแต่งบิวต์อินทั้งหลัง สวนร่มรื่น สังคมคุณภาพส่วนตัว รปภ. 24 ชั่วโมง'
   }
 ];
 
@@ -64,7 +47,8 @@ export function loadAppState(): AppState {
         properties: Array.isArray(parsed.properties) && parsed.properties.length > 0 ? parsed.properties : SAMPLE_PROPERTIES,
         groups: Array.isArray(parsed.groups) && parsed.groups.length > 0 ? parsed.groups : SAMPLE_GROUPS,
         history: Array.isArray(parsed.history) ? parsed.history : [],
-        settings: parsed.settings ? { ...DEFAULT_SETTINGS, ...parsed.settings } : DEFAULT_SETTINGS
+        settings: parsed.settings ? { ...DEFAULT_SETTINGS, ...parsed.settings } : DEFAULT_SETTINGS,
+        license: parsed.license || { isActivated: false }
       };
     }
   } catch (err) {
@@ -74,7 +58,8 @@ export function loadAppState(): AppState {
     properties: SAMPLE_PROPERTIES,
     groups: SAMPLE_GROUPS,
     history: [],
-    settings: DEFAULT_SETTINGS
+    settings: DEFAULT_SETTINGS,
+    license: { isActivated: false }
   };
 }
 

@@ -49,11 +49,18 @@ export interface Settings {
   folderPath: string;
 }
 
+export interface LicenseInfo {
+  isActivated: boolean;
+  licenseKey?: string;
+  activatedAt?: string;
+}
+
 export interface AppState {
   properties: Property[];
   groups: FBGroup[];
   history: PostingHistory[];
   settings: Settings;
+  license?: LicenseInfo;
 }
 
 export type TabType = 'properties' | 'groups' | 'poster' | 'history' | 'settings';

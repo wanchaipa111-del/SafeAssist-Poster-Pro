@@ -18,6 +18,9 @@ import {
 } from './utils/storage';
 import { buildCaptionText } from './utils/caption';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { UpgradeModal } from './components/UpgradeModal';
+import { SellerKeygenModal } from './components/SellerKeygenModal';
+import { getOrCreateDeviceId, validateLicenseKey, TRIAL_MAX_PROPERTIES } from './utils/license';
 
 interface Toast {
   id: string;
@@ -35,6 +38,46 @@ export default function App() {
     return true; // Default dark as requested in the HTML template
   });
   const [toasts, setToasts] = useState<Toast[]>([]);
+
+  // --- License & Trial State ---
+  const deviceId = useMemo(() => getOrCreateDeviceId(), []);
+  const isActivated = Boolean(appState.license?.isActivated);
+  const isTrialMode = !isActivated;
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isSellerModalOpen, setIsSellerModalOpen] = useState(false);
+
+  const handleActivateLicense = (key: string): boolean => {
+    if (validateLicenseKey(key, deviceId)) {
+      const updated: AppState = {
+        ...appState,
+        license: {
+          isActivated: true,
+          licenseKey: key.trim().toUpperCase(),
+          activatedAt: new Date().toISOString()
+        }
+      };
+      setAppState(updated);
+      saveAppState(updated);
+      showToast('🎉 ปลดล็อกเวอร์ชันเต็ม Lifetime VIP เรียบร้อยแล้ว! ใช้งานได้ไม่จำกัดตลอดชีพ', 'success');
+      return true;
+    }
+    return false;
+  };
+
+  const handleResetTrial = () => {
+    const updated: AppState = {
+      ...appState,
+      license: {
+        isActivated: false,
+        licenseKey: undefined,
+        activatedAt: undefined
+      }
+    };
+    setAppState(updated);
+    saveAppState(updated);
+    setIsUpgradeModalOpen(false);
+    showToast('คืนค่ากลับเป็นเวอร์ชันทดลองใช้งาน (จำกัด 2 ทรัพย์) เรียบร้อยแล้ว', 'info');
+  };
 
   // Sync state to local storage
   useEffect(() => {
@@ -312,6 +355,15 @@ export default function App() {
       setEditingProperty(prop);
       setPropFormState({ ...prop });
     } else {
+      // Check free trial limitation (max 2 properties)
+      if (isTrialMode && appState.properties.length >= TRIAL_MAX_PROPERTIES) {
+        setIsUpgradeModalOpen(true);
+        showToast(
+          `เวอร์ชันทดลองใช้งานฟรีจำกัดสูงสุด ${TRIAL_MAX_PROPERTIES} ทรัพย์ กรุณาปลดล็อกเวอร์ชันเต็มเพื่อเพิ่มไม่จำกัด`,
+          'error'
+        );
+        return;
+      }
       setEditingProperty(null);
       const def = appState.settings;
       setPropFormState({
@@ -588,12 +640,33 @@ export default function App() {
         return;
       }
 
+      let propsToAdd = importedProps;
+      if (isTrialMode) {
+        const remainingQuota = TRIAL_MAX_PROPERTIES - appState.properties.length;
+        if (remainingQuota <= 0) {
+          setIsUpgradeModalOpen(true);
+          showToast(
+            `เวอร์ชันทดลองจำกัดสูงสุด ${TRIAL_MAX_PROPERTIES} ทรัพย์ ไม่สามารถนำเข้าเพิ่มได้ กรุณาปลดล็อกเวอร์ชันเต็ม`,
+            'error'
+          );
+          return;
+        }
+        if (importedProps.length > remainingQuota) {
+          propsToAdd = importedProps.slice(0, remainingQuota);
+          showToast(
+            `เวอร์ชันทดลองจำกัดสูงสุด ${TRIAL_MAX_PROPERTIES} ทรัพย์ (นำเข้าให้เฉพาะ ${propsToAdd.length} รายการแรก)`,
+            'info'
+          );
+          setIsUpgradeModalOpen(true);
+        }
+      }
+
       setAppState((prev) => ({
         ...prev,
-        properties: [...importedProps, ...prev.properties]
+        properties: [...propsToAdd, ...prev.properties]
       }));
 
-      showToast(`นำเข้าข้อมูลอสังหาริมทรัพย์สำเร็จ ${importedProps.length} รายการ`, 'success');
+      showToast(`นำเข้าข้อมูลอสังหาริมทรัพย์สำเร็จ ${propsToAdd.length} รายการ`, 'success');
     } catch (err) {
       console.error(err);
       showToast('เกิดข้อผิดพลาดในการอ่านไฟล์ Excel กรุณาตรวจสอบรูปแบบไฟล์', 'error');
@@ -703,7 +776,14 @@ export default function App() {
                   SafeAssist <span className="text-blue-500 font-extrabold">Poster Pro</span>
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  ระบบช่วยโพสต์อสังหาฯ หลายกลุ่ม Facebook ปลอดภัย 100%
+                  <span
+                    onClick={() => setIsSellerModalOpen(true)}
+                    className="cursor-pointer hover:text-blue-500 transition-colors"
+                    title="ผู้ดูแลระบบ"
+                  >
+                    ระบบ
+                  </span>
+                  ช่วยโพสต์อสังหาฯ หลายกลุ่ม Facebook ปลอดภัย 100%
                 </p>
               </div>
             </div>
@@ -742,6 +822,29 @@ export default function App() {
                 <i className="fa-solid fa-upload text-emerald-500"></i>
                 <span className="hidden sm:inline">Restore</span>
               </button>
+
+              {/* License Status Badge / Upgrade Button */}
+              {isActivated ? (
+                <button
+                  onClick={() => setIsUpgradeModalOpen(true)}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-yellow-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold transition hover:bg-amber-500/20 cursor-pointer shadow-sm"
+                  title="คลิกเพื่อดูสถานะสิทธิ์การใช้งาน Lifetime VIP"
+                >
+                  <i className="fa-solid fa-crown text-amber-500"></i>
+                  <span className="hidden sm:inline">Lifetime VIP</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsUpgradeModalOpen(true)}
+                  className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-bold shadow-md shadow-amber-500/25 transition cursor-pointer"
+                  title="คลิกเพื่อปลดล็อกเวอร์ชันเต็มตลอดชีพ"
+                >
+                  <i className="fa-solid fa-crown text-yellow-200"></i>
+                  <span className="hidden md:inline">ทดลองใช้ ({appState.properties.length}/{TRIAL_MAX_PROPERTIES})</span>
+                  <span className="md:hidden">({appState.properties.length}/2)</span>
+                  <span className="ml-1 bg-black/20 text-white px-1.5 py-0.5 rounded-lg text-[10px]">ปลดล็อก 👑</span>
+                </button>
+              )}
 
               <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
@@ -964,6 +1067,33 @@ export default function App() {
                 </button>
               </div>
             </div>
+
+            {/* Trial Mode Notification Banner */}
+            {isTrialMode && (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-orange-500/10 dark:from-amber-950/40 dark:to-orange-950/30 border border-amber-300 dark:border-amber-700/60 rounded-2xl text-xs gap-3 shadow-sm">
+                <div className="flex items-center space-x-3">
+                  <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-white flex items-center justify-center shadow-md shadow-amber-500/30 shrink-0">
+                    <i className="fa-solid fa-crown text-base"></i>
+                  </span>
+                  <div>
+                    <p className="font-bold text-amber-900 dark:text-amber-200 text-sm">
+                      สิทธิ์ทดลองใช้งานฟรี: จำกัดบันทึกได้ {TRIAL_MAX_PROPERTIES} ทรัพย์ (ใช้งานแล้ว {appState.properties.length}/{TRIAL_MAX_PROPERTIES})
+                    </p>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs">
+                      ปลดล็อกเวอร์ชันเต็ม (Lifetime VIP) เพื่อบันทึกทรัพย์ไม่จำกัด นำเข้า Excel ไม่อั้น ซื้อขาดครั้งเดียวใช้งานได้ตลอดชีพ
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsUpgradeModalOpen(true)}
+                  className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-xl shadow-md transition cursor-pointer shrink-0 flex items-center space-x-1.5"
+                >
+                  <i className="fa-solid fa-unlock-keyhole"></i>
+                  <span>ปลดล็อกเวอร์ชันเต็ม 👑</span>
+                </button>
+              </div>
+            )}
 
             {/* Properties List/Grid */}
             {filteredProperties.length === 0 ? (
@@ -1961,6 +2091,62 @@ export default function App() {
                 </div>
               </form>
             </div>
+
+            {/* License & Subscription Status Card */}
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-700/80 pb-3 gap-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                    <i className="fa-solid fa-crown text-lg"></i>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">
+                      สถานะสิทธิ์การใช้งาน (License Status)
+                    </h4>
+                    <p className="text-xs text-slate-400">
+                      ข้อมูลสิทธิ์และโควตาการใช้งานของระบบ SafeAssist Poster Pro
+                    </p>
+                  </div>
+                </div>
+                {isActivated ? (
+                  <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 rounded-full text-xs font-bold flex items-center space-x-1 self-start sm:self-auto">
+                    <i className="fa-solid fa-check text-[10px]"></i>
+                    <span>Lifetime VIP (เปิดใช้งานแล้ว)</span>
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800 rounded-full text-xs font-bold flex items-center space-x-1 self-start sm:self-auto">
+                    <i className="fa-solid fa-hourglass-half text-[10px]"></i>
+                    <span>ทดลองใช้งานฟรี (จำกัด {TRIAL_MAX_PROPERTIES} ทรัพย์)</span>
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl space-y-1">
+                  <span className="text-slate-400">รหัสเครื่อง (Device ID):</span>
+                  <p className="font-mono font-bold text-blue-600 dark:text-blue-400">{deviceId}</p>
+                </div>
+                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl space-y-1">
+                  <span className="text-slate-400">โควตารายการอสังหาริมทรัพย์:</span>
+                  <p className="font-bold text-slate-700 dark:text-slate-200">
+                    {isActivated ? 'ไม่จำกัด (Unlimited)' : `${appState.properties.length} / ${TRIAL_MAX_PROPERTIES} ทรัพย์`}
+                  </p>
+                </div>
+              </div>
+
+              {!isActivated && (
+                <div className="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-700/60">
+                  <button
+                    type="button"
+                    onClick={() => setIsUpgradeModalOpen(true)}
+                    className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-xs font-bold transition shadow-md cursor-pointer flex items-center space-x-1.5"
+                  >
+                    <i className="fa-solid fa-crown"></i>
+                    <span>ปลดล็อกเวอร์ชันเต็มตลอดชีพ 👑</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </section>
         )}
       </main>
@@ -2523,6 +2709,26 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* ================= MODAL: UPGRADE & ACTIVATION ================= */}
+      <UpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        deviceId={deviceId}
+        isActivated={isActivated}
+        licenseInfo={appState.license}
+        onActivate={handleActivateLicense}
+        contactLine="@828ehqct"
+        lineLinkUrl="https://lin.ee/QbEeYc7"
+      />
+
+      {/* ================= MODAL: SELLER KEY GENERATOR (ADMIN ONLY) ================= */}
+      <SellerKeygenModal
+        isOpen={isSellerModalOpen}
+        onClose={() => setIsSellerModalOpen(false)}
+        currentDeviceId={deviceId}
+        onResetCurrentDeviceToTrial={handleResetTrial}
+      />
 
       {/* ================= OFFLINE INDICATOR ================= */}
       <OfflineIndicator />
