@@ -15,8 +15,11 @@ export const Footer: React.FC<FooterProps> = ({ onSecretSellerClick }) => {
           <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4">
             <LuminaqLogo size="md" />
             <div className="sm:border-l sm:border-slate-200 sm:dark:border-slate-800 sm:pl-4 space-y-0.5">
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                SafeAssist Poster Pro
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-center sm:justify-start gap-1.5">
+                <span>SafeAssist Poster Pro</span>
+                <span className="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-400 font-mono text-[10px] font-bold border border-blue-200 dark:border-blue-800/60">
+                  v5.5.1
+                </span>
               </p>
               <p className="text-[11px] text-slate-400 dark:text-slate-500">
                 พัฒนาและจัดจำหน่ายโดย <strong className="text-slate-600 dark:text-slate-400 font-semibold">Luminaq Soft</strong>

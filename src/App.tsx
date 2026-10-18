@@ -785,9 +785,14 @@ export default function App() {
                 <i className="fa-solid fa-building-circle-check text-xl"></i>
               </div>
               <div>
-                <h1 className="font-bold text-lg leading-tight text-slate-900 dark:text-white">
-                  SafeAssist <span className="text-blue-500 font-extrabold">Poster Pro</span>
-                </h1>
+                <div className="flex items-center space-x-2">
+                  <h1 className="font-bold text-lg leading-tight text-slate-900 dark:text-white">
+                    SafeAssist <span className="text-blue-500 font-extrabold">Poster Pro</span>
+                  </h1>
+                  <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 font-bold font-mono text-[10px] border border-blue-200 dark:border-blue-800 shadow-xs">
+                    v5.5.1
+                  </span>
+                </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   <span
                     onClick={() => setIsSellerModalOpen(true)}
@@ -2117,7 +2122,7 @@ export default function App() {
                       สถานะสิทธิ์การใช้งาน (License Status)
                     </h4>
                     <p className="text-xs text-slate-400">
-                      ข้อมูลสิทธิ์และโควตาการใช้งานของระบบ SafeAssist Poster Pro
+                      ข้อมูลสิทธิ์และโควตาการใช้งานของระบบ SafeAssist Poster Pro v5.5.1 (Luminaq Soft)
                     </p>
                   </div>
                 </div>
