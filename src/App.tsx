@@ -20,6 +20,7 @@ import { buildCaptionText } from './utils/caption';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { UpgradeModal } from './components/UpgradeModal';
 import { SellerKeygenModal } from './components/SellerKeygenModal';
+import { Footer } from './components/Footer';
 import { getOrCreateDeviceId, validateLicenseKey, TRIAL_MAX_PROPERTIES } from './utils/license';
 
 interface Toast {
@@ -702,12 +703,24 @@ export default function App() {
       try {
         const imported = JSON.parse(evt.target?.result as string);
         if (imported && (imported.properties || imported.groups)) {
-          setAppState({
+          // Preserve license activation:
+          // If this machine is already activated, never demote it back to trial
+          const currentLicense = appState.license;
+          const resolvedLicense =
+            (currentLicense && currentLicense.isActivated)
+              ? currentLicense
+              : (imported.license && imported.license.isActivated ? imported.license : currentLicense || { isActivated: false });
+
+          const updatedState: AppState = {
             properties: Array.isArray(imported.properties) ? imported.properties : appState.properties,
             groups: Array.isArray(imported.groups) ? imported.groups : appState.groups,
             history: Array.isArray(imported.history) ? imported.history : appState.history,
-            settings: imported.settings ? { ...DEFAULT_SETTINGS, ...imported.settings } : appState.settings
-          });
+            settings: imported.settings ? { ...DEFAULT_SETTINGS, ...imported.settings } : appState.settings,
+            license: resolvedLicense
+          };
+
+          setAppState(updatedState);
+          saveAppState(updatedState);
           showToast('นำเข้าและกู้คืนข้อมูลสำเร็จเรียบร้อย', 'success');
         } else {
           showToast('ไฟล์สำรองไม่ถูกต้อง', 'error');
@@ -2150,6 +2163,9 @@ export default function App() {
           </section>
         )}
       </main>
+
+      {/* ================= FOOTER: LUMINAQ SOFT BRANDING ================= */}
+      <Footer onSecretSellerClick={() => setIsSellerModalOpen(true)} />
 
       {/* ================= MODAL: ADD / EDIT PROPERTY ================= */}
       {isPropertyModalOpen && (

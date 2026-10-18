@@ -37,18 +37,36 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 const STORAGE_KEY = 'estate_poster_db';
+const LICENSE_LOCK_KEY = 'safeassist_license_lock';
 
 export function loadAppState(): AppState {
+  // Check if this machine has an existing activated license lock
+  let activeLicenseLock = null;
+  try {
+    const rawLock = localStorage.getItem(LICENSE_LOCK_KEY);
+    if (rawLock) {
+      activeLicenseLock = JSON.parse(rawLock);
+    }
+  } catch (err) {
+    console.error('Error loading license lock:', err);
+  }
+
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
+      // Prefer active license lock if activated
+      const resolvedLicense =
+        (activeLicenseLock && activeLicenseLock.isActivated)
+          ? activeLicenseLock
+          : (parsed.license || { isActivated: false });
+
       return {
         properties: Array.isArray(parsed.properties) && parsed.properties.length > 0 ? parsed.properties : SAMPLE_PROPERTIES,
         groups: Array.isArray(parsed.groups) && parsed.groups.length > 0 ? parsed.groups : SAMPLE_GROUPS,
         history: Array.isArray(parsed.history) ? parsed.history : [],
         settings: parsed.settings ? { ...DEFAULT_SETTINGS, ...parsed.settings } : DEFAULT_SETTINGS,
-        license: parsed.license || { isActivated: false }
+        license: resolvedLicense
       };
     }
   } catch (err) {
@@ -59,13 +77,17 @@ export function loadAppState(): AppState {
     groups: SAMPLE_GROUPS,
     history: [],
     settings: DEFAULT_SETTINGS,
-    license: { isActivated: false }
+    license: (activeLicenseLock && activeLicenseLock.isActivated) ? activeLicenseLock : { isActivated: false }
   };
 }
 
 export function saveAppState(state: AppState): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    // If state contains an activated license, lock it into dedicated storage
+    if (state.license && state.license.isActivated) {
+      localStorage.setItem(LICENSE_LOCK_KEY, JSON.stringify(state.license));
+    }
   } catch (err) {
     console.error('Error saving app state to storage:', err);
   }

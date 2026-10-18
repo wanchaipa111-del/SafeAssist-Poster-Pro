@@ -1,0 +1,74 @@
+<svg viewBox="0 0 340 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="luminaqOuter" x1="15%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="35%" stop-color="#67E8F9" />
+      <stop offset="70%" stop-color="#6EE7B7" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+
+    <linearGradient id="luminaqInner" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1E40AF" />
+      <stop offset="50%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+
+    <radialGradient id="luminaqGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E0F2FE" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <circle cx="50" cy="50" r="38" fill="url(#luminaqGlow)" opacity="0.4" />
+
+  <!-- Outer Droplet & Swirl Q Ribbon -->
+  <path
+    d="M 38 12 
+       C 45 22, 52 28, 62 33 
+       C 74 39, 82 50, 80 64 
+       C 78 77, 66 86, 52 86 
+       C 34 86, 21 73, 21 55 
+       C 21 42, 28 32, 38 12 Z"
+    fill="url(#luminaqOuter)"
+  />
+
+  <!-- Inner Loop Cutout -->
+  <path
+    d="M 50 34 
+       C 61 34, 69 42, 69 53 
+       C 69 64, 60 72, 49 72 
+       C 38 72, 31 63, 31 52 
+       C 31 41, 40 34, 50 34 Z"
+    fill="url(#luminaqInner)"
+    opacity="0.15"
+  />
+
+  <!-- Q Tail Sweep -->
+  <path
+    d="M 46 72 
+       C 56 72, 67 76, 75 83 
+       C 78 85, 83 87, 85 86 
+       C 87 85, 82 80, 77 75 
+       C 72 70, 68 66, 68 62 
+       C 68 60, 70 59, 72 61 
+       C 75 64, 80 72, 74 77 
+       C 68 81, 57 77, 46 72 Z"
+    fill="url(#luminaqOuter)"
+  />
+
+  <!-- Center Four-Point Sparkle Star (✦) -->
+  <path
+    d="M 50 36 
+       Q 50 48 40 51 
+       Q 50 54 50 66 
+       Q 50 54 60 51 
+       Q 50 48 50 36 Z"
+    fill="#FFFFFF"
+  />
+  <circle cx="50" cy="51" r="2.5" fill="#E0F2FE" />
+
+  <!-- Brand Typography -->
+  <text x="110" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="44" font-weight="800" fill="#1E293B" letter-spacing="-1">Luminaq</text>
+  <text x="112" y="82" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#38BDF8" letter-spacing="5">SOFT</text>
+</svg>

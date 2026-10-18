@@ -157,7 +157,7 @@ ${keyToCopy}
                 ระบบรักษาความปลอดภัยเฉพาะผู้ดูแลระบบ
               </p>
               <p className="text-slate-400">
-                กรุณากรอก Master Admin PIN เพื่อปลดล็อกหน้าต่างสร้าง License Key (รหัสเริ่มต้น: <strong>{ADMIN_MASTER_PIN}</strong>)
+                กรุณากรอก Master Admin PIN 6 หลัก เพื่อเข้าใช้งานเครื่องมือออก License Key
               </p>
             </div>
 
